@@ -16,6 +16,7 @@ import (
 	"github.com/flomesh-io/xnet/pkg/xnet/bpf/load"
 	"github.com/flomesh-io/xnet/pkg/xnet/cni"
 	"github.com/flomesh-io/xnet/pkg/xnet/cni/deliver"
+	"github.com/flomesh-io/xnet/pkg/xnet/e4lb"
 	"github.com/flomesh-io/xnet/pkg/xnet/volume"
 )
 
@@ -69,6 +70,7 @@ func NewServer(ctx context.Context, kubeController k8s.Controller, msgBroker *me
 func (s *server) Start() error {
 	load.ProgLoadAll()
 	load.InitMeshConfig()
+	e4lb.BridgeOn()
 
 	if err := os.RemoveAll(s.unixSockPath); err != nil {
 		log.Fatal().Err(err)
