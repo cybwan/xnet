@@ -3,7 +3,7 @@ package e4lb
 import "github.com/flomesh-io/xnet/pkg/logger"
 
 const (
-	flbDev = `f4lb0`
+	flbDev = `flb0`
 )
 
 var (
