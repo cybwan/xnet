@@ -5,11 +5,11 @@ import (
 
 	"github.com/flomesh-io/xnet/pkg/xnet/bpf/maps"
 	"github.com/flomesh-io/xnet/pkg/xnet/tc"
-	"github.com/flomesh-io/xnet/pkg/xnet/util"
+	"github.com/flomesh-io/xnet/pkg/xnet/util/link"
 )
 
 func BridgeOn() {
-	if success := util.LinkTapAdd(flbDev); !success {
+	if success := link.LinkTapAdd(flbDev); !success {
 		log.Error().Msgf("fail to add %s link", flbDev)
 	} else {
 		if iface, ifaceErr := net.InterfaceByName(flbDev); ifaceErr != nil {
