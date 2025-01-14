@@ -13,6 +13,7 @@ const natAddDescription = ``
 const natAddExample = ``
 
 type natAddCmd struct {
+	sys
 	nat
 }
 
@@ -33,6 +34,7 @@ func newNatAdd() *cobra.Command {
 
 	//add flags
 	f := cmd.Flags()
+	natAdd.sys.addFlags(f)
 	natAdd.sa.addFlags(f)
 	natAdd.proto.addFlags(f)
 	natAdd.tc.addFlags(f)
@@ -56,11 +58,11 @@ func (a *natAddCmd) run() error {
 			return fmt.Errorf(`invalid ep MAC address: %s`, a.ep.mac)
 		}
 		for _, natKey := range natKeys {
-			natVal, _ := maps.GetNatEntry(&natKey)
+			natVal, _ := maps.GetNatEntry(a.sysId(), &natKey)
 			if _, err = natVal.AddEp(a.ep.addr, a.ep.port, mac, a.inactive); err != nil {
 				fmt.Printf(`add ep addr: %s port: %d fail: %s\n`, a.ep.addr, a.ep.port, err.Error())
 			} else {
-				if err = maps.AddNatEntry(&natKey, natVal); err != nil {
+				if err = maps.AddNatEntry(a.sysId(), &natKey, natVal); err != nil {
 					fmt.Printf(`add nat: {"key":%s,"value":%s} fail: %s`, natKey.String(), natVal.String(), err.Error())
 				}
 			}

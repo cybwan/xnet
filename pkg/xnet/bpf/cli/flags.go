@@ -6,8 +6,21 @@ import (
 
 	flag "github.com/spf13/pflag"
 
+	"github.com/flomesh-io/xnet/pkg/xnet/bpf/maps"
 	"github.com/flomesh-io/xnet/pkg/xnet/util"
 )
+
+type sys struct {
+	id uint32
+}
+
+func (s *sys) addFlags(f *flag.FlagSet) {
+	f.Uint32Var(&s.id, "sys", 0, "--sys=0")
+}
+
+func (s *sys) sysId() maps.SysID {
+	return maps.SysID(s.id)
+}
 
 type tc struct {
 	tcIngress bool

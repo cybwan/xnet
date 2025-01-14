@@ -209,6 +209,14 @@ show-nat-map:
 show-cfg-map:
 	@${BIN_DIR}/xnat cfg list | jq
 
+.PHONY: show-mesh-cfg
+show-mesh-cfg:
+	@${BIN_DIR}/xnat cfg get --sys=0 | jq
+
+.PHONY: show-e4lb-cfg
+show-e4lb-cfg:
+	@${BIN_DIR}/xnat cfg get --sys=1 | jq
+
 .PHONY: show-prog-map
 show-prog-map:
 	@${BIN_DIR}/xnat prog list | jq

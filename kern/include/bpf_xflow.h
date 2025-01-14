@@ -11,6 +11,7 @@ xpkt_trace_check(skb_t *skb, xpkt_t *pkt, cfg_t *cfg)
     tr_op_t *op;
     if (cfg->ipv4_trace_by_ip_on) {
         tr_ip_t key;
+        key.sys = pkt->flow.sys;
         XADDR_COPY(key.addr, pkt->flow.saddr);
         op = bpf_map_lookup_elem(&fsm_trip, &key);
         if (op == NULL) {
@@ -23,6 +24,7 @@ xpkt_trace_check(skb_t *skb, xpkt_t *pkt, cfg_t *cfg)
     }
     if (cfg->ipv4_trace_by_port_on) {
         tr_port_t key;
+        key.sys = pkt->flow.sys;
         key.port = pkt->flow.sport;
         op = bpf_map_lookup_elem(&fsm_trpt, &key);
         if (op == NULL) {
@@ -49,6 +51,7 @@ xpkt_acl_check(skb_t *skb, xpkt_t *pkt, cfg_t *cfg)
     acl_key_t key;
     acl_op_t *op;
 
+    key.sys = pkt->flow.sys;
     key.proto = pkt->flow.proto;
     if (pkt->tc_dir == TC_DIR_IGR) {
         XADDR_COPY(key.addr, pkt->flow.saddr);
@@ -130,6 +133,8 @@ xpkt_flow_nat(skb_t *skb, xpkt_t *pkt, xnat_t *xnat, __u8 with_addr,
     nat_ep_t *ep;
     int ep_sel;
 
+    key.sys = pkt->flow.sys;
+
     if (with_addr) {
         XADDR_COPY(key.daddr, pkt->flow.daddr);
     } else {
@@ -198,6 +203,7 @@ xpkt_flow_init_reverse_op(xpkt_t *pkt, cfg_t *cfg, void *fsm_xflow,
     flow_op_t *rop;
     int ridx = 1;
 
+    rflow.sys = pkt->flow.sys;
     XADDR_COPY(&rflow.daddr, op->xnat.xaddr);
     XADDR_COPY(&rflow.saddr, op->xnat.raddr);
     rflow.dport = op->xnat.xport;
@@ -335,6 +341,7 @@ xpkt_flow_init_ops(skb_t *skb, xpkt_t *pkt, cfg_t *cfg, void *fsm_xflow,
     if (cfg->ipv4_tcp_nat_opt_on && pkt->flow.proto == IPPROTO_TCP) {
         if (XFLAG_HAS(op->nfs[TC_DIR_EGR], NF_XNAT)) {
             opt_key_t opt;
+            opt.sys = pkt->flow.sys;
             XADDR_COPY(opt.raddr, op->xnat.xaddr);
             if (cfg->ipv4_tcp_nat_opt_with_local_addr_on) {
                 XADDR_COPY(opt.laddr, op->xnat.raddr);
@@ -358,6 +365,7 @@ xpkt_flow_init_ops(skb_t *skb, xpkt_t *pkt, cfg_t *cfg, void *fsm_xflow,
     } else if (cfg->ipv4_udp_nat_opt_on && pkt->flow.proto == IPPROTO_UDP) {
         if (XFLAG_HAS(op->nfs[TC_DIR_EGR], NF_XNAT)) {
             opt_key_t opt;
+            opt.sys = pkt->flow.sys;
             XADDR_COPY(opt.raddr, op->xnat.xaddr);
             if (cfg->ipv4_tcp_nat_opt_with_local_addr_on) {
                 XADDR_COPY(opt.laddr, op->xnat.raddr);
@@ -458,6 +466,7 @@ flow_track:
             return TRANS_EST;
         }
 
+        rflow.sys = pkt->flow.sys;
         XADDR_COPY(&rflow.daddr, op->xnat.xaddr);
         XADDR_COPY(&rflow.saddr, op->xnat.raddr);
         rflow.dport = op->xnat.xport;
@@ -497,6 +506,7 @@ flow_track:
         } else if (trans == TRANS_ERR || trans == TRANS_CWT) {
             if (cfg->ipv4_tcp_nat_opt_on && pkt->flow.proto == IPPROTO_TCP) {
                 if (XFLAG_HAS(rop->nfs[TC_DIR_EGR], NF_XNAT)) {
+                    opt.sys = pkt->flow.sys;
                     XADDR_COPY(opt.raddr, rop->xnat.xaddr);
                     if (cfg->ipv4_tcp_nat_opt_with_local_addr_on) {
                         XADDR_COPY(opt.laddr, rop->xnat.raddr);
@@ -517,6 +527,7 @@ flow_track:
                     }
                 }
                 if (XFLAG_HAS(op->nfs[TC_DIR_EGR], NF_XNAT)) {
+                    opt.sys = pkt->flow.sys;
                     XADDR_COPY(opt.raddr, op->xnat.xaddr);
                     if (cfg->ipv4_tcp_nat_opt_with_local_addr_on) {
                         XADDR_COPY(opt.laddr, op->xnat.raddr);
@@ -539,6 +550,7 @@ flow_track:
             } else if (cfg->ipv4_udp_nat_opt_on &&
                        pkt->flow.proto == IPPROTO_UDP) {
                 if (XFLAG_HAS(rop->nfs[TC_DIR_EGR], NF_XNAT)) {
+                    opt.sys = pkt->flow.sys;
                     XADDR_COPY(opt.raddr, rop->xnat.xaddr);
                     if (cfg->ipv4_tcp_nat_opt_with_local_addr_on) {
                         XADDR_COPY(opt.laddr, rop->xnat.raddr);
@@ -559,6 +571,7 @@ flow_track:
                     }
                 }
                 if (XFLAG_HAS(op->nfs[TC_DIR_EGR], NF_XNAT)) {
+                    opt.sys = pkt->flow.sys;
                     XADDR_COPY(opt.raddr, op->xnat.xaddr);
                     if (cfg->ipv4_tcp_nat_opt_with_local_addr_on) {
                         XADDR_COPY(opt.laddr, op->xnat.raddr);

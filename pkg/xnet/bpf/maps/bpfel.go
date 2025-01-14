@@ -1,6 +1,7 @@
 package maps
 
 type FsmAclKeyT struct {
+	Sys   uint32
 	Addr  [4]uint32
 	Port  uint16
 	Proto uint8
@@ -68,6 +69,7 @@ type FsmFlowUOpT struct {
 }
 
 type FsmFlowT struct {
+	Sys   uint32
 	Daddr [4]uint32
 	Saddr [4]uint32
 	Dport uint16
@@ -88,6 +90,7 @@ type FsmIfNameT struct {
 }
 
 type FsmNatKeyT struct {
+	Sys   uint32
 	Daddr [4]uint32
 	Dport uint16
 	Proto uint8
@@ -109,6 +112,7 @@ type FsmNatOpT struct {
 }
 
 type FsmOptKeyT struct {
+	Sys   uint32
 	Laddr [4]uint32
 	Raddr [4]uint32
 	Lport uint16
@@ -117,8 +121,14 @@ type FsmOptKeyT struct {
 	V6    uint8
 }
 
-type FsmTrIpT struct{ Addr [4]uint32 }
+type FsmTrIpT struct {
+	Sys  uint32
+	Addr [4]uint32
+}
 
 type FsmTrOpT struct{ TcDir [2]uint8 }
 
-type FsmTrPortT struct{ Port uint16 }
+type FsmTrPortT struct {
+	Sys  uint32
+	Port uint16
+}

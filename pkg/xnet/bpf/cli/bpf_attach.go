@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/flomesh-io/xnet/pkg/xnet/bpf/maps"
 	"github.com/flomesh-io/xnet/pkg/xnet/ns"
 	nstc "github.com/flomesh-io/xnet/pkg/xnet/tc"
 )
@@ -56,7 +57,7 @@ func (a *bpfAttachCmd) run() error {
 	}
 
 	err = namespace.Do(func(_ ns.NetNS) error {
-		return nstc.AttachBPFProg(a.dev)
+		return nstc.AttachBPFProg(maps.SysMesh, a.dev)
 	})
 	return err
 }

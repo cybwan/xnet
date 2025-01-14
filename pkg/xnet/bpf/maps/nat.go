@@ -15,7 +15,8 @@ import (
 	"github.com/flomesh-io/xnet/pkg/xnet/util"
 )
 
-func AddNatEntry(natKey *NatKey, natVal *NatVal) error {
+func AddNatEntry(sysId SysID, natKey *NatKey, natVal *NatVal) error {
+	natKey.Sys = uint32(sysId)
 	pinnedFile := fs.GetPinningFile(bpf.FSM_MAP_NAME_NAT)
 	if natMap, err := ebpf.LoadPinnedMap(pinnedFile, &ebpf.LoadPinOptions{}); err == nil {
 		defer natMap.Close()
@@ -32,7 +33,8 @@ func AddNatEntry(natKey *NatKey, natVal *NatVal) error {
 	}
 }
 
-func DelNatEntry(natKey *NatKey) error {
+func DelNatEntry(sysId SysID, natKey *NatKey) error {
+	natKey.Sys = uint32(sysId)
 	pinnedFile := fs.GetPinningFile(bpf.FSM_MAP_NAME_NAT)
 	if natMap, err := ebpf.LoadPinnedMap(pinnedFile, &ebpf.LoadPinOptions{}); err == nil {
 		defer natMap.Close()
@@ -46,7 +48,8 @@ func DelNatEntry(natKey *NatKey) error {
 	}
 }
 
-func GetNatEntry(natKey *NatKey) (*NatVal, error) {
+func GetNatEntry(sysId SysID, natKey *NatKey) (*NatVal, error) {
+	natKey.Sys = uint32(sysId)
 	pinnedFile := fs.GetPinningFile(bpf.FSM_MAP_NAME_NAT)
 	if natMap, err := ebpf.LoadPinnedMap(pinnedFile, &ebpf.LoadPinOptions{}); err == nil {
 		defer natMap.Close()
@@ -59,8 +62,8 @@ func GetNatEntry(natKey *NatKey) (*NatVal, error) {
 }
 
 func (t *NatKey) String() string {
-	return fmt.Sprintf(`{"daddr": "%s","dport": %d,"proto": "%s","v6": %t,"tc_dir": "%s"}`,
-		_ip_(t.Daddr[0]), _port_(t.Dport), _proto_(t.Proto), _bool_(t.V6), _tc_dir_(t.TcDir))
+	return fmt.Sprintf(`{"sys": "%s","daddr": "%s","dport": %d,"proto": "%s","v6": %t,"tc_dir": "%s"}`,
+		_sys_(t.Sys), _ip_(t.Daddr[0]), _port_(t.Dport), _proto_(t.Proto), _bool_(t.V6), _tc_dir_(t.TcDir))
 }
 
 func (t *NatVal) String() string {

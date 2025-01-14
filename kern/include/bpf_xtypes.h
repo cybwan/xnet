@@ -3,6 +3,10 @@
 
 #define INTERNAL(type) __attribute__((__always_inline__)) static inline type
 
+typedef enum xpkt_sys_e { SYS_MESH = 0, SYS_E4LB = 1, SYS_MAX } sys_e;
+
+typedef __u32 sys_t;
+
 typedef struct __sk_buff skb_t;
 
 typedef struct xpkt_mesh_cfg_t {
@@ -68,6 +72,7 @@ typedef struct xpkt_decoder_t {
 } decoder_t;
 
 typedef struct xpkt_flow_t {
+    sys_t sys;
     __u32 daddr[IP_ALEN];
     __u32 saddr[IP_ALEN];
     __u16 dport;
@@ -207,6 +212,7 @@ typedef struct xpkt_flow_op_t {
 } flow_op_t;
 
 typedef struct {
+    sys_t sys;
     __u32 daddr[IP_ALEN];
     __u16 dport;
     __u8 proto;
@@ -229,6 +235,7 @@ typedef struct {
 } nat_op_t;
 
 typedef struct xpkt_opt_key_t {
+    sys_t sys;
     __u32 laddr[IP_ALEN];
     __u32 raddr[IP_ALEN];
     __u16 lport;
@@ -238,6 +245,7 @@ typedef struct xpkt_opt_key_t {
 } __attribute__((packed)) opt_key_t;
 
 typedef struct xpkt_acl_key_t {
+    sys_t sys;
     __u32 addr[IP_ALEN];
     __u16 port;
     __u8 proto;
@@ -256,10 +264,12 @@ typedef struct xpkt_acl_op_t {
 } __attribute__((packed)) acl_op_t;
 
 typedef struct xpkt_trace_ip_t {
+    sys_t sys;
     __u32 addr[IP_ALEN];
 } __attribute__((packed)) tr_ip_t;
 
 typedef struct xpkt_trace_port_t {
+    sys_t sys;
     __u16 port;
 } __attribute__((packed)) tr_port_t;
 

@@ -20,7 +20,19 @@
 
 char __LICENSE[] SEC("license") = "GPL";
 
-INTERNAL(int) sidecar_dispatch(skb_t *skb, xpkt_t *pkt, cfg_t *cfg)
+SEC("classifier/pass")
+int pass(skb_t *skb)
+{
+    return TC_ACT_OK;
+}
+
+SEC("classifier/drop")
+int drop(skb_t *skb)
+{
+    return TC_ACT_SHOT;
+}
+
+INTERNAL(int) dispatch(skb_t *skb, xpkt_t *pkt, cfg_t *cfg)
 {
     if (XFLAG_HAS(pkt->nfs[pkt->tc_dir], NF_XNAT)) {
         if (pkt->flow.proto == IPPROTO_TCP) {
@@ -115,9 +127,8 @@ INTERNAL(int) sidecar_dispatch(skb_t *skb, xpkt_t *pkt, cfg_t *cfg)
     return TC_ACT_OK;
 }
 
-INTERNAL(int) sidecar_main(skb_t *skb, xpkt_t *pkt)
+INTERNAL(int) process(skb_t *skb, xpkt_t *pkt)
 {
-    int z = 0;
     decoder_t decoder;
     decoder.start = XPKT_PTR(XPKT_DATA(skb));
     decoder.data_begin = XPKT_PTR(decoder.start);
@@ -128,7 +139,7 @@ INTERNAL(int) sidecar_main(skb_t *skb, xpkt_t *pkt)
         goto decode_fail;
     }
 
-    cfg_t *cfg = bpf_map_lookup_elem(&fsm_xcfg, &z);
+    cfg_t *cfg = bpf_map_lookup_elem(&fsm_xcfg, &pkt->flow.sys);
     if (!cfg) {
         return TC_ACT_SHOT;
     }
@@ -234,7 +245,7 @@ INTERNAL(int) sidecar_main(skb_t *skb, xpkt_t *pkt)
         FSM_DBG("[DBG] TRANS: %d\n", trans);
     }
 
-    return sidecar_dispatch(skb, pkt, cfg);
+    return dispatch(skb, pkt, cfg);
 
 decode_fail:
     if (ret < DECODE_OK) {
@@ -243,8 +254,8 @@ decode_fail:
     return TC_ACT_SHOT;
 }
 
-SEC("classifier/sidecar/ingress")
-int sidecar_ingress(skb_t *skb)
+SEC("classifier/mesh/ingress")
+int mesh_ingress(skb_t *skb)
 {
     int z = 0;
     xpkt_t *pkt = bpf_map_lookup_elem(&fsm_xpkt, &z);
@@ -255,12 +266,13 @@ int sidecar_ingress(skb_t *skb)
     memset(pkt, 0, sizeof *pkt);
     pkt->tc_dir = TC_DIR_IGR;
     pkt->ifi = skb->ifindex;
+    pkt->flow.sys = SYS_MESH;
 
-    return sidecar_main(skb, pkt);
+    return process(skb, pkt);
 }
 
-SEC("classifier/sidecar/egress")
-int sidecar_egress(skb_t *skb)
+SEC("classifier/mesh/egress")
+int mesh_egress(skb_t *skb)
 {
     int z = 0;
     xpkt_t *pkt = bpf_map_lookup_elem(&fsm_xpkt, &z);
@@ -271,18 +283,41 @@ int sidecar_egress(skb_t *skb)
     memset(pkt, 0, sizeof *pkt);
     pkt->tc_dir = TC_DIR_EGR;
     pkt->ifi = skb->ifindex;
+    pkt->flow.sys = SYS_MESH;
 
-    return sidecar_main(skb, pkt);
+    return process(skb, pkt);
 }
 
-SEC("classifier/pass")
-int sidecar_pass(skb_t *skb)
+SEC("classifier/e4lb/ingress")
+int e4lb_ingress(skb_t *skb)
 {
-    return TC_ACT_OK;
+    int z = 0;
+    xpkt_t *pkt = bpf_map_lookup_elem(&fsm_xpkt, &z);
+    if (!pkt) {
+        return TC_ACT_SHOT;
+    }
+
+    memset(pkt, 0, sizeof *pkt);
+    pkt->tc_dir = TC_DIR_IGR;
+    pkt->ifi = skb->ifindex;
+    pkt->flow.sys = SYS_E4LB;
+
+    return process(skb, pkt);
 }
 
-SEC("classifier/drop")
-int sidecar_drop(skb_t *skb)
+SEC("classifier/e4lb/egress")
+int e4lb_egress(skb_t *skb)
 {
-    return TC_ACT_SHOT;
+    int z = 0;
+    xpkt_t *pkt = bpf_map_lookup_elem(&fsm_xpkt, &z);
+    if (!pkt) {
+        return TC_ACT_SHOT;
+    }
+
+    memset(pkt, 0, sizeof *pkt);
+    pkt->tc_dir = TC_DIR_EGR;
+    pkt->ifi = skb->ifindex;
+    pkt->flow.sys = SYS_E4LB;
+
+    return process(skb, pkt);
 }
