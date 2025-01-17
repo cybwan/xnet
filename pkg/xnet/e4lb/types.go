@@ -1,6 +1,10 @@
 package e4lb
 
-import "github.com/flomesh-io/xnet/pkg/logger"
+import (
+	"fmt"
+
+	"github.com/flomesh-io/xnet/pkg/logger"
+)
 
 const (
 	flbDev = `flb0`
@@ -8,4 +12,7 @@ const (
 
 var (
 	log = logger.New("fsm-xnet-elb")
+
+	SysctlNetIPv4ConfArpIgnore   = fmt.Sprintf("net/ipv4/conf/%s/arp_ignore", flbDev)
+	SysctlNetIPv4ConfArpAnnounce = fmt.Sprintf("net/ipv4/conf/%s/arp_announce", flbDev)
 )
