@@ -224,22 +224,25 @@ func AttachBPFProg(sysId maps.SysID, dev string) error {
 	}
 
 	if qdisc, qdiscErr := GetBPFQdisc(rtnl, uint32(iface.Index)); qdiscErr != nil {
-		log.Error().Msgf("get qdisc error: %v", qdiscErr)
+		log.Error().Msgf("get tc qdisc error: %v", qdiscErr)
 		return qdiscErr
 	} else if qdisc == nil {
 		if err := addBPFQdisc(rtnl, uint32(iface.Index)); err != nil {
+			log.Error().Msgf("add tc qdisc error: %v", err)
 			return err
 		}
 	}
 
 	if filter, _ := GetBPFFilter(rtnl, uint32(iface.Index), HandleIngress); filter == nil {
 		if err := addBPFFilter(rtnl, uint32(iface.Index), HandleIngress, uint32(ingressProgFD)); err != nil {
+			log.Error().Msgf("add tc ingress filter error: %v", err)
 			return err
 		}
 	}
 
 	if filter, _ := GetBPFFilter(rtnl, uint32(iface.Index), HandleEgress); filter == nil {
 		if err := addBPFFilter(rtnl, uint32(iface.Index), HandleEgress, uint32(egressProgFD)); err != nil {
+			log.Error().Msgf("add tc egress filter error: %v", err)
 			return err
 		}
 	}

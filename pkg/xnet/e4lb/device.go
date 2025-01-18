@@ -16,8 +16,8 @@ func BridgeOn() {
 		if iface, ifaceErr := net.InterfaceByName(flbDev); ifaceErr != nil {
 			log.Fatal().Err(ifaceErr).Msgf("fail to find %s link", flbDev)
 		} else {
-			if attachErr := tc.AttachBPFProg(maps.SysE4lb, iface.Name); attachErr != nil {
-				log.Fatal().Err(attachErr).Msgf("fail to attach %s link", flbDev)
+			if attachErr := tc.AttachBPFProg(maps.SysE4lb, flbDev); attachErr != nil {
+				log.Fatal().Err(attachErr).Msgf("fail to attach %s link: %d", flbDev, iface.Index)
 			}
 		}
 	}
