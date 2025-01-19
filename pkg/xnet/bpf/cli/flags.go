@@ -15,7 +15,7 @@ type sys struct {
 }
 
 func (s *sys) addFlags(f *flag.FlagSet) {
-	f.Uint32Var(&s.id, "sys", 0, "--sys=0")
+	f.Uint32Var(&s.id, "sys", 0, "--sys=0/1 (mesh:0 e4lb:1)")
 }
 
 func (s *sys) sysId() maps.SysID {
